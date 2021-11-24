@@ -1,3 +1,4 @@
+import unittest
 from unittest.mock import patch
 from flask import url_for
 from flask_testing import TestCase
@@ -11,34 +12,33 @@ class TestBase(TestCase):
 
 class TestResponse(TestBase):
 
-    def test_view_homepage(self):
-        response = self.client.get(url_for('home'))
-        self.assertEqual(response.status_code, 200)
-
-    def test_view_index(self):
-        response = self.client.get(url_for('noises'))
-        self.assertEqual(response.status_code, 200)
+    def test_view_animals(self):
+        with requests_mock.Mocker() as m:
+            m.get('http://animal_api:5000/animal/name', text='Pig')
+            m.post('http://animal_api:5000/animal/noise', text='Oink')
+            response = self.client.get(url_for('animals'))
+     self.assertEqual(response.status_code, 200)
 
     def test_pig_noise(self):
         with requests_mock.Mocker() as m:
-            m.get('http://animal_api:5000/get/animal', text='pig')
-            m.get('http://animal_api:5000/get/noise', text='oink')
-
-            response = self.client.get(url_for('noises'))
-            self.assertEqual(response.status_code, 200)
+            m.get('http://animal_api:5000/animal/name', text='Pig')
+            m.post('http://animal_api:5000/animal/noise', text='Oink')
+            
+            response = self.client.get(url_for('animals'))
+            self.assertIn(b'The Pig Goes Oink')
 
     def test_cow_noise(self):
         with requests_mock.Mocker() as m:
-            m.get('http://animal_api:5000/get/animal', text='cow')
-            m.get('http://animal_api:5000/get/noise', text='moo')
+            m.get('http://animal_api:5000/animal/name', text='Cow')
+            m.get('http://animal_api:5000/animal/noise', text='Moo')
 
-            response = self.client.get(url_for('noises'))
-            self.assertEqual(response.status_code, 200)
+            response = self.client.get(url_for('animals'))
+            self.assertIn(b'The Cow Goes Moo')
 
     def test_dog_noise(self):
         with requests_mock.Mocker() as m:
-            m.get('http://animal_api:5000/get/animal', text='dog')
-            m.get('http://animal_api:5000/get/noise', text='woof')
+            m.get('http://animal_api:5000/animal/name', text='Dog')
+            m.get('http://animal_api:5000/animal/noise', text='Woof')
 
-            response = self.client.get(url_for('noises'))
-            self.assertEqual(response.status_code, 200)
+            response = self.client.get(url_for('animals'))
+            self.assertIn(b'The Dog Goes Woof')
